@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="A private workspace for source-backed answers and business analysis.">
+<title>Chat With Data · Document workspace</title>
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+<script src="vendor/lucide.min.js" defer></script>
+<script src="vendor/jszip.min.js" defer></script>
+<script type="module" src="app.mjs"></script>
+</head>
+<body>
+<div class="shell">
+<aside class="sidebar" id="sidebar">
+ <div class="brand"><img src="logo.svg" alt=""><div><strong>Chat With Data</strong><small>DOCUMENT INTELLIGENCE</small></div></div>
+ <button id="new" class="new"><i data-lucide="plus"></i> New conversation</button>
+ <div class="side-label">WORKSPACE</div>
+ <nav aria-label="Workspace">
+  <button class="nav active" data-view="chat"><i data-lucide="messages-square"></i> Ask AI</button>
+  <button class="nav" data-view="sources"><i data-lucide="layers"></i> Source library <span id="nav-count">0</span></button>
+  <button class="nav" data-view="business"><i data-lucide="chart-no-axes-combined"></i> Business insights</button>
+ </nav>
+ <div class="side-label history-label">RECENT CONVERSATIONS</div>
+ <div id="history" class="history"><span>Questions will appear here</span></div>
+ <div class="side-bottom"><div class="privacy-icon"><i data-lucide="lock-keyhole"></i></div><div><strong>Private workspace</strong><small>Files stay on this device</small></div></div>
+</aside>
+<section class="workspace">
+ <header class="top"><button class="icon-button mobile-menu" id="menu" aria-label="Toggle navigation" aria-expanded="false"><i data-lucide="menu"></i></button><div class="crumb"><span>Workspace</span><i data-lucide="chevron-right"></i><strong id="page-name">Ask AI</strong></div><button class="privacy-pill" id="privacy"><i data-lucide="shield-check"></i> Local processing</button></header>
+ <main id="main" tabindex="-1">
+  <div id="chat" class="view chat">
+   <div id="welcome" class="welcome">
+    <div class="hero-mark"><i data-lucide="sparkles"></i></div>
+    <div class="eyebrow"><span></span> SOURCE-GROUNDED ANALYSIS</div>
+    <h1>Ask your <em>documents.</em></h1>
+    <p>Bring your files together and get answers you can trace back to the source.</p>
+    <div class="suggest-label">EXPLORE YOUR DATA</div>
+    <div class="suggest-grid">
+     <button class="suggest" data-prompt="Summarize all uploaded files"><i data-lucide="align-left"></i><span><strong>Summarize my files</strong><small>Get the key points across sources</small></span><i data-lucide="arrow-up-right"></i></button>
+     <button class="suggest" data-prompt="Compare the uploaded files"><i data-lucide="columns-2"></i><span><strong>Compare documents</strong><small>See how your sources differ</small></span><i data-lucide="arrow-up-right"></i></button>
+     <button class="suggest" data-prompt="Which products are profitable or losing money?"><i data-lucide="chart-no-axes-combined"></i><span><strong>Find profit and loss</strong><small>Identify top and bottom performers</small></span><i data-lucide="arrow-up-right"></i></button>
+     <button class="suggest" data-prompt="Calculate break-even and target pricing"><i data-lucide="tag"></i><span><strong>Explore pricing</strong><small>Model break-even and target margins</small></span><i data-lucide="arrow-up-right"></i></button>
+    </div>
+   </div>
+   <div id="thread" class="thread" aria-live="polite"></div>
+  </div>
+  <div id="sources-view" class="view subview" hidden></div>
+  <div id="business-view" class="view subview" hidden></div>
+ </main>
+ <div class="composer-wrap" id="composer-wrap">
+  <form id="composer" class="composer"><label for="question" class="sr">Question about your files</label><textarea id="question" rows="2" maxlength="1500" placeholder="Ask a question about your files…"></textarea><div class="composer-tools"><button type="button" id="attach" class="attach"><i data-lucide="paperclip"></i> Attach files</button><button class="send" id="send" aria-label="Send question"><i data-lucide="arrow-up"></i></button></div></form>
+  <div class="composer-foot"><i data-lucide="info"></i><span>Verify important answers against the cited sources.</span></div>
+ </div>
+</section>
+<aside class="sources" id="sources-panel" aria-label="Sources">
+ <div class="sources-head"><div><span class="eyebrow">YOUR DATA</span><h2>Sources <span id="count">0</span></h2></div><i data-lucide="folder-open"></i></div>
+ <button class="drop" id="drop"><span class="upload-icon"><i data-lucide="upload-cloud"></i></span><strong>Drop files here</strong><span>or <u>click to browse</u></span></button>
+ <button class="folder" id="folder"><i data-lucide="folder-plus"></i> Upload a folder</button>
+ <input type="file" id="files" multiple hidden><input type="file" id="folders" webkitdirectory multiple hidden>
+ <div class="formats">PDF, DOCX, XLSX, PPTX, CSV, TSV, JSON, TXT, MD, HTML · 20 MB each</div>
+ <div id="upload-status" class="status" role="status"></div>
+ <div class="file-heading"><span>ACTIVE SOURCES</span><button id="clear" hidden>Clear</button></div>
+ <div id="source-list"></div>
+ <button class="demo" id="demo"><i data-lucide="flask-conical"></i><span><strong>Try with sample data</strong><small>2 spreadsheets and a business brief</small></span><i data-lucide="chevron-right"></i></button>
+</aside>
+</div>
+<dialog id="dialog"><div class="dialog-head"><h2 id="dialog-title"></h2><button class="icon-button" id="close-dialog" aria-label="Close"><i data-lucide="x"></i></button></div><div id="dialog-body"></div></dialog>
+</body>
+</html>
