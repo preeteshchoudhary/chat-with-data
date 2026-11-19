@@ -1,3 +1,4 @@
+import {financialAnswer} from './financial-reports.mjs';
 import {selectPdfEvidence,verifyPdfAnswer,pdfSchema,pdfInstructions} from './pdf-chat.mjs';
 import {readFile, fileLimit, sourcesFor, analyzeTable, pricing, answer} from './engine.mjs';
 
@@ -426,7 +427,7 @@ async function ask(prompt) {
   try {
     const pdfs=documents.filter(doc=>doc.extension==='pdf');
     const tableQuestion=documents.some(doc=>doc.tables.length)&&/\b(?:spreadsheet|csv|xlsx|transaction table|transaction rows)\b/i.test(prompt);
-    turn.result=pdfs.length&&!tableQuestion?await answerPdf(prompt,pdfs,previous):await localAnswer(prompt,answer(prompt,documents));
+    turn.result=financialAnswer(prompt,documents)??(pdfs.length&&!tableQuestion?await answerPdf(prompt,pdfs,previous):await localAnswer(prompt,answer(prompt,documents)));
   }
   catch { turn.result = {text:'The workspace could not process this question. Try fewer sources or a more specific question.',refs:[],mode:'Unable to answer'}; }
   if (chat === state.chats[state.current]) {

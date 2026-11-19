@@ -1,3 +1,4 @@
+import {pdfReportLines} from './financial-reports.mjs';
 import {transactionAnswer} from './transactions.mjs';
 import {isNoticeDuration, noticeAnswer, rankEvidence} from './evidence.mjs';
 import {hasPeriod, requestedPeriod, scopeTable} from './periods.mjs';
@@ -136,7 +137,7 @@ async function pdf(file) {
   const base = new URL('./vendor/', import.meta.url).href;
   lib.GlobalWorkerOptions.workerSrc = base + 'pdf.worker.min.mjs';
   const task = lib.getDocument({data:new Uint8Array(await file.arrayBuffer()), cMapUrl:base+'cmaps/', cMapPacked:true, standardFontDataUrl:base+'standard_fonts/', wasmUrl:base+'wasm/', iccUrl:base+'iccs/', isEvalSupported:false, enableXfa:false});
-  const blocks = [], empty = [];
+  const blocks = [], empty = [], reportPages = [];
   let length = 0;
   try {
     const doc = await task.promise;
@@ -147,12 +148,14 @@ async function pdf(file) {
       const text = content.items.map(item => item.str ?? '').join(' ');
       if ((length += text.length) > maxExtract) throw Error('PDF exceeds the extracted text limit.');
       if (!text.trim()) empty.push(n);
-      blocks.push(...chunks(text, 'Page ' + n));
+      const location = 'Page ' + n;
+      blocks.push(...chunks(text, location));
+      reportPages.push({location, rows:pdfReportLines(content.items)});
       page.cleanup();
     }
   } finally { await task.destroy(); }
   if (!blocks.length) throw Error('No selectable PDF text found. Run OCR and upload a searchable PDF.');
-  return {blocks, warnings:empty.length ? [empty.length + ' page(s) contained no selectable text.'] : []};
+  return {blocks, reportPages, warnings:empty.length ? [empty.length + ' page(s) contained no selectable text.'] : []};
 }
 
 export async function readFile(file) {
@@ -193,7 +196,7 @@ export async function readFile(file) {
   const blocks = parsed.blocks ?? [];
   if (blocks.reduce((sum, block) => sum + block.text.length, 0) + tables.reduce((sum, table) => sum + table.rows.flat().reduce((total, cell) => total + cell.length, 0), 0) > maxExtract) throw Error('File exceeds the extracted text limit.');
   if (!tables.length && !blocks.length) throw Error('No readable text or data found.');
-  return {id:crypto.randomUUID(),name,extension,tables,blocks,warnings:parsed.warnings ?? [],size:file.size};
+  return {id:crypto.randomUUID(),name,extension,tables,blocks,reportPages:parsed.reportPages,warnings:parsed.warnings ?? [],size:file.size};
 }
 
 function plainRecord(item) {

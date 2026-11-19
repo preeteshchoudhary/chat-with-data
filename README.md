@@ -33,3 +33,7 @@ Choose a PDF in **Search in**, or leave **All sources** selected. Ask about a to
 Select **Enable AI** to use the on-device language model in a compatible desktop Chrome browser. The local edition also supports Ollama when configured as described above. The model receives at most eight selected passages per question. It must cite exact quotes from those passages. The workspace checks the quote text and page references before displaying an answer. Check whether the excerpt supports the model's interpretation.
 
 Image-only scans need a searchable text layer from OCR. When the model is unavailable, the workspace shows searchable excerpts.
+
+## Financial reports
+
+Upload a searchable annual report, income statement, balance sheet, or cash-flow statement. Use **Search in** to select a report. Try asking for revenue growth between two years, gross or net margin, the current ratio, or operating cash flow. Supported calculations use recognized row labels and explicit year columns and cite the original page or table row. Broader questions about management commentary, risks, and accounting notes use PDF retrieval and the optional local model. Image-only PDFs need a searchable OCR layer. Ambiguous figures and incompatible units require clarification.
