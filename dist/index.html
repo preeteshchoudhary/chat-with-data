@@ -15,7 +15,7 @@
 <body>
 <div class="shell">
 <aside class="sidebar" id="sidebar">
- <div class="brand"><img src="logo.svg" alt=""><div><strong>Chat With Data</strong><small>DOCUMENT INTELLIGENCE</small></div></div>
+ <div class="brand"><img src="logo.svg" alt=""><div><strong>Chat With Data</strong><small>FINANCIAL RESEARCH</small></div></div>
  <button id="new" class="new"><i data-lucide="plus"></i> New conversation</button>
  <div class="side-label">WORKSPACE</div>
  <nav aria-label="Workspace">
@@ -32,11 +32,10 @@
  <main id="main" tabindex="-1">
   <div id="chat" class="view chat">
    <div id="welcome" class="welcome">
-    <div class="hero-mark"><i data-lucide="sparkles"></i></div>
-    <div class="eyebrow"><span></span> SOURCE-GROUNDED ANALYSIS</div>
-    <h1>Read deeper.<br><em>Ask better questions.</em></h1>
-    <p>Ask about financial reports and trace answers back to the pages or rows that support them.</p>
-    <div class="suggest-label">START WITH A QUESTION</div>
+    <div class="research-label"><i data-lucide="files"></i> Report analysis</div>
+    <h1>Understand your<br>financial reports.</h1>
+    <p>Compare reporting periods, check key figures, and open the source behind each answer.</p>
+    <div class="suggest-label">Suggested questions</div>
     <div class="suggest-grid">
      <button class="suggest" data-prompt="Summarize the key findings in this PDF"><i data-lucide="align-left"></i><span><strong>Summarize a PDF</strong><small>Pull out the key findings</small></span><i data-lucide="arrow-up-right"></i></button>
      <button class="suggest" data-prompt="What factors does management give for the change in revenue?"><i data-lucide="columns-2"></i><span><strong>Explain performance</strong><small>Find what management says drove revenue</small></span><i data-lucide="arrow-up-right"></i></button>
@@ -50,19 +49,18 @@
   <div id="business-view" class="view subview" hidden></div>
  </main>
  <div class="composer-wrap" id="composer-wrap">
-  <form id="composer" class="composer"><label for="question" class="sr">Question about your files</label><textarea id="question" rows="2" maxlength="1500" placeholder="Ask a question about your files…"></textarea><div class="composer-tools"><button type="button" id="attach" class="attach"><i data-lucide="paperclip"></i> Attach files</button><button class="send" id="send" aria-label="Send question"><i data-lucide="arrow-up"></i></button></div></form>
-  <div class="scope-row"><label for="scope">Search in</label><select id="scope"><option value="">All sources</option></select></div>
+  <form id="composer" class="composer"><label for="question" class="sr">Question about your files</label><textarea id="question" rows="2" maxlength="1500" placeholder="Ask a question about your files…"></textarea><div class="composer-tools"><button type="button" id="attach" class="attach"><i data-lucide="paperclip"></i> Attach files</button><div class="scope-row"><label for="scope">Search in</label><select id="scope"><option value="">All sources</option></select></div><button class="send" id="send" aria-label="Send question"><i data-lucide="arrow-up"></i></button></div></form>
   <div class="composer-foot"><i data-lucide="info"></i><span>Verify important answers against the cited sources.</span></div>
  </div>
 </section>
 <aside class="sources" id="sources-panel" aria-label="Sources">
- <div class="sources-head"><div><span class="eyebrow">YOUR DATA</span><h2>Sources <span id="count">0</span></h2></div><i data-lucide="folder-open"></i></div>
- <button class="drop" id="drop"><span class="upload-icon"><i data-lucide="upload-cloud"></i></span><strong>Drop files here</strong><span>or <u>click to browse</u></span></button>
+ <div class="sources-head"><div><h2>Sources <span id="count">0</span></h2></div><i data-lucide="folder-open"></i></div>
+ <button class="drop" id="drop"><span class="upload-icon"><i data-lucide="upload-cloud"></i></span><strong>Add financial reports</strong><span>Drop files or <u>browse</u></span></button>
  <button class="folder" id="folder"><i data-lucide="folder-plus"></i> Upload a folder</button>
  <input type="file" id="files" multiple hidden><input type="file" id="folders" webkitdirectory multiple hidden>
  <div class="formats">PDF, DOCX, XLSX, PPTX, CSV, TSV, JSON, TXT, MD, HTML · 20 MB each</div>
  <div id="upload-status" class="status" role="status"></div>
- <div class="file-heading"><span>ACTIVE SOURCES</span><button id="clear" hidden>Clear</button></div>
+ <div class="file-heading"><span>Uploaded files</span><button id="clear" hidden>Clear</button></div>
  <div id="source-list"></div>
  <button class="demo" id="demo"><i data-lucide="flask-conical"></i><span><strong>Try with sample data</strong><small>2 spreadsheets and a business brief</small></span><i data-lucide="chevron-right"></i></button>
 </aside>
