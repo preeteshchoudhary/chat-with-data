@@ -1,39 +1,73 @@
 # Chat With Data
 
-A document workspace with in-browser retrieval, source inspection and spreadsheet analysis. The hosted site processes uploaded data in the browser. The local edition can also generate answers using an installed Ollama model. Uploads and conversations are kept in tab memory. Refreshing or closing the tab clears them.
+**A source-cited workspace for financial reports and transaction analysis.**
 
-## Start on a Mac
+Upload annual reports, income statements, balance sheets, cash-flow statements, or spreadsheets. Ask a question in plain language, check the calculation, and open the PDF page or spreadsheet row behind the answer.
 
-1. Install Node.js 22 or later.
-2. From the extracted folder, run `node local-server.mjs`.
-3. Open `http://127.0.0.1:8700`.
+[Hosted workspace](https://rag-ai-workspace.tinklingowl16.chatgpt.site/) · [Run locally](#run-locally) · [What you can ask](#what-you-can-ask)
 
-### Enable local generated answers
+The hosted workspace requires owner access. Anyone with the repository can run the local edition.
 
-Install Ollama from its official site. Run `OLLAMA_NO_CLOUD=1 ollama serve` in Terminal. If the Ollama desktop app already owns port 11434, quit it before starting the terminal server. In a second Terminal window, download the pretrained model with `ollama pull qwen3:4b`, then start RAG AI with `RAG_AI_MODEL=qwen3:4b node local-server.mjs`. Refresh after starting. The privacy menu displays the installed model and lets you disable it for the current tab. An installation and model download require network access. The running application sends selected excerpts only to the loopback Ollama service when the model is enabled.
+## What you can ask
 
-## Run the regression tests
+| Question | What the workspace returns |
+| --- | --- |
+| How much did revenue grow from 2024 to 2025? | Reported figures for both years, the absolute and percentage change, and citations. |
+| What was the net margin or current ratio in 2025? | A calculation using recognized line items and their source references. |
+| Why did management say revenue changed? | Relevant PDF excerpts. With a compatible model enabled, a written answer with citations. |
+| Which products were profitable or losing money? | Profit and loss by product for supported transaction tables, with links to the source. |
 
-Run `node --test` from the project folder. The tests cover conflicting notice periods, insufficient evidence, source diversity, Hindi notice questions, incomplete rows, period and currency checks, pricing, upload parsing and large-source retrieval.
+Try **Try with sample data** in the workspace to explore the transaction workflow. For report-specific questions, upload a searchable financial PDF or a spreadsheet with labeled reporting years, then select it under **Search in**.
 
-## Files and calculations
+## Run locally
 
-Use PDF with selectable text, DOCX, XLSX, PPTX, CSV, TSV, JSON, TXT, Markdown, HTML or LOG files. The file picker supports batch uploads and the folder picker keeps relative file paths. Limits are 20 MB per file, 80 MB combined, 30 sources and 150,010 sections in a tab. Legacy binary Office files, images and OCR are outside the current format support. Workbooks use stored formula values. Convert currencies and include all relevant costs before calculating. Profit and loss are calculated per source table. The analysis checks symbols against explicit currency codes. Profit questions can scope results to explicit quarter, month and year labels in source names, sheet names or period columns. Fiscal quarters require explicit labels. Expected pricing is a scenario calculation from user-entered inputs.
+Requires **Node.js 22 or later**.
 
-The hosted edition retrieves and cites source excerpts, flags contradictory numeric notice durations, and directly answers straightforward notice-duration questions. Hindi/English matching covers common business and notice terms. The app reports insufficient evidence when retrieval cannot find a strong match. The local model can compose an answer from those excerpts and return references. Source links identify the originating section. Generated claims require review against the cited wording. Retrieval can miss paraphrases and multilingual matches. The model is pretrained and no uploaded files are used for training.
+```sh
+git clone https://github.com/preeteshchoudhary/chat-with-data.git
+cd chat-with-data
+node local-server.mjs
+```
 
-The private hosted link is owner-only. Institutional deployment with organization SSO, roles, cross-tenant isolation tests, retention policies and independent accuracy evaluations requires the organization’s environment. The local server listens only on loopback.
+Open [http://127.0.0.1:8700](http://127.0.0.1:8700). Document search and supported calculations work as soon as the server starts.
 
-Transaction CSV tables support up to 100,000 data rows and 1.5 million cells within the file-size limit. Filtered profit rankings use signed revenue and cost, explicit period labels, region, channel and status. Combined results check matching transaction IDs and currency.
+### Enable AI-written answers
 
-## PDF question answering
+In a compatible desktop Chrome browser, select **Enable AI** to use the browser’s on-device model. The local edition also supports Ollama.
 
-Choose a PDF in **Search in**, or leave **All sources** selected. Ask about a topic, section, or page range. The workspace searches readable PDF text and shows the pages that matched.
+1. Install Ollama and start its local service. For a terminal-managed instance, use `OLLAMA_NO_CLOUD=1 ollama serve`.
+2. In a separate terminal, download the model and start the workspace.
 
-Select **Enable AI** to use the on-device language model in a compatible desktop Chrome browser. The local edition also supports Ollama when configured as described above. The model receives at most eight selected passages per question. It must cite exact quotes from those passages. The workspace checks the quote text and page references before displaying an answer. Check whether the excerpt supports the model's interpretation.
+   ```sh
+   ollama pull qwen3:4b
+   RAG_AI_MODEL=qwen3:4b node local-server.mjs
+   ```
 
-Image-only scans need a searchable text layer from OCR. When the model is unavailable, the workspace shows searchable excerpts.
+## How it works
 
-## Financial reports
+1. **Read the source.** The browser extracts document text and recognizes supported financial tables.
+2. **Find the answer.** Questions are routed to document retrieval or to deterministic report and transaction calculations.
+3. **Show the evidence.** Answers link to pages or rows. For model-written replies, the app checks that quoted text exists in the source. Review the cited passage to confirm the interpretation.
 
-Upload a searchable annual report, income statement, balance sheet, or cash-flow statement. Use **Search in** to select a report. Try asking for revenue growth between two years, gross or net margin, the current ratio, or operating cash flow. Supported calculations use recognized row labels and explicit year columns and cite the original page or table row. Broader questions about management commentary, risks, and accounting notes use PDF retrieval and the optional local model. Image-only PDFs need a searchable OCR layer. Ambiguous figures and incompatible units require clarification.
+| Part | Implementation |
+| --- | --- |
+| Workspace | HTML, CSS, and JavaScript |
+| Document parsing | PDF.js for PDFs and JSZip for modern Office files |
+| Calculations | JavaScript functions for report comparisons, ratios, and transaction analysis |
+| Optional generation | Chrome on-device AI or a local Ollama model |
+| Local server and tests | Node.js |
+
+## File support and limits
+
+- **Formats** include searchable PDF, DOCX, XLSX, PPTX, CSV, TSV, JSON, TXT, Markdown, HTML, and LOG.
+- **Upload limits** are 20 MB per file, 80 MB combined, and 30 sources per tab. Transaction CSVs support up to 100,000 data rows and 1.5 million cells within those limits.
+- **Report layouts** need recognizable line items and labeled years for automatic calculations. Image-only PDFs need an OCR text layer. XLSX analysis uses stored formula values.
+- **Privacy** comes from browser-side processing and tab memory. Closing or refreshing the tab clears the session. If enabled, the local Ollama integration sends selected excerpts to the loopback service.
+
+## Tests
+
+```sh
+node --test
+```
+
+The regression suite covers PDF retrieval and quote validation, report calculations and ambiguous figures, conflicting evidence, currency and period checks, and filtered profitability at scale.
