@@ -1,3 +1,4 @@
+import {selectPdfEvidence,verifyPdfAnswer,pdfSchema,pdfInstructions} from './pdf-chat.mjs';
 import {readFile, fileLimit, sourcesFor, analyzeTable, pricing, answer} from './engine.mjs';
 
 const byId = (id) => document.getElementById(id);
@@ -28,6 +29,33 @@ const question = byId('question');
 const files = byId('files');
 const folders = byId('folders');
 const drop = byId('drop');
+const scope=byId('scope');
+const modelToggle=byId('model-toggle');
+let browserModel=null;
+
+function syncModel() {
+  const enabled=!!(browserModel||state.offlineModel&&state.useModel);
+  modelToggle.textContent=enabled?'AI on':'Enable AI';
+  modelToggle.setAttribute('aria-pressed',String(enabled));
+}
+
+modelToggle.onclick=async()=>{
+  if(state.offlineModel){state.useModel=!state.useModel;syncModel();return;}
+  if(browserModel){browserModel.destroy();browserModel=null;syncModel();return;}
+  const model=globalThis.LanguageModel;
+  modelToggle.disabled=true;
+  modelToggle.textContent='Starting AI…';
+  try {
+    if(!model||await model.availability()==='unavailable') {
+      showDialog('Enable AI',element('p','','This browser does not expose its built-in AI model. You can open this workspace in a compatible Chrome desktop browser or use Ollama in the local edition. PDF search remains available here.'));
+      return;
+    }
+    browserModel=await model.create({monitor(monitor){monitor.addEventListener('downloadprogress',event=>{modelToggle.textContent='Downloading '+Math.round(event.loaded*100)+'%';});}});
+  } catch {
+    showDialog('Enable AI',element('p','','The on-device model could not start. PDF search is available while you check your browser model setup.'));
+  } finally {modelToggle.disabled=false;syncModel();}
+};
+
 
 function showDialog(title, ...children) {
   byId('dialog-title').textContent = title;
@@ -78,6 +106,9 @@ function resetChats() {
 }
 
 function renderSources() {
+  const active=scope.value;
+  scope.replaceChildren(new Option('All sources',''),...state.docs.map(doc=>new Option(doc.name,doc.id)));
+  if(state.docs.some(doc=>doc.id===active)) scope.value=active;
   byId('count').textContent = state.docs.length;
   byId('nav-count').textContent = state.docs.length;
   byId('clear').hidden = !state.docs.length;
@@ -166,7 +197,7 @@ function renderThread() {
     body.dir = 'auto';
     reply.append(header,body);
     if (turn.result?.refs?.length) {
-      const showExcerpts = ['Evidence excerpts','Conflicting evidence','Qualified evidence'].includes(turn.result.mode);
+      const showExcerpts = ['Evidence excerpts','Conflicting evidence','Qualified evidence','PDF evidence'].includes(turn.result.mode);
       const evidence = element('div',showExcerpts ? 'doc-list' : 'evidence');
       turn.result.refs.forEach((ref,i) => {
         const cite = button('['+(i+1)+'] '+ref.name+' · '+ref.location,'ref',()=>preview(ref));
@@ -330,7 +361,7 @@ byId('privacy').onclick = () => {
     const label = element('label');
     const check = element('input');
     check.type='checkbox'; check.checked=state.useModel;
-    check.onchange=()=>{state.useModel=check.checked;};
+    check.onchange=()=>{state.useModel=check.checked;syncModel();};
     label.append(check,document.createTextNode(' Use installed local model · '+state.offlineModel));
     copy.push(element('p','','When enabled, the question and selected source excerpts go to the local model running on this computer.'),label);
   }
@@ -352,17 +383,51 @@ async function localAnswer(prompt, fallback) {
   }
 }
 
+async function answerPdf(prompt,docs,previous) {
+  const {refs,modelRefs,pageScoped}=selectPdfEvidence(prompt,docs,previous);
+  const fallback=refs.length?{
+    text:'Review these matching passages. Enable AI to get a written answer with citations.',refs,mode:'PDF evidence'
+  }:{
+    text:pageScoped?'There is no readable text in the requested pages. Check the range or upload a searchable PDF.':'I found no matching passages. Try a term from the PDF, specify a page, or ask for a summary.',
+    refs:[],mode:'Insufficient evidence'
+  };
+  if(!modelRefs.length||!browserModel&&!(state.offlineModel&&state.useModel)) return fallback;
+  const evidence=modelRefs.map((ref,index)=>({id:index+1,source:ref.name.slice(0,350),location:ref.location,text:ref.text}));
+  const input={question:prompt,previous:previous.slice(0,500),evidence,pdf:true};
+  try {
+    let result;
+    if(browserModel) {
+      const session=await browserModel.clone();
+      try {result=JSON.parse(await session.prompt(pdfInstructions+'\n'+JSON.stringify(input),{responseConstraint:pdfSchema,signal:AbortSignal.timeout(60000)}));}
+      finally {session.destroy();}
+    } else {
+      const response=await fetch('/api/answer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(input),signal:AbortSignal.timeout(95000)});
+      if(!response.ok) throw Error('Model unavailable');
+      result=await response.json();
+    }
+    return verifyPdfAnswer(result,modelRefs)??{...fallback,text:'The model did not return an answer with quotes I could verify. Try naming a section or narrowing the question.'};
+  } catch {
+    return {...fallback,text:'The AI model did not finish. You can still inspect the matching passages or ask about a smaller page range.'};
+  }
+}
+
 async function ask(prompt) {
   prompt=prompt.trim();
   const chat=state.chats[state.current];
   if (!prompt || chat.some(turn=>!turn.result)) return;
   question.value='';
+  const documents=state.docs.filter(doc=>!scope.value||doc.id===scope.value);
+  const previous=chat.at(-1)?.prompt??'';
   const turn={prompt};
   chat.push(turn);
   renderThread();
   icons();
   thread.lastElementChild?.scrollIntoView({block:'nearest'});
-  try { turn.result = await localAnswer(prompt,answer(prompt,state.docs)); }
+  try {
+    const pdfs=documents.filter(doc=>doc.extension==='pdf');
+    const tableQuestion=documents.some(doc=>doc.tables.length)&&/\b(?:spreadsheet|csv|xlsx|transaction table|transaction rows)\b/i.test(prompt);
+    turn.result=pdfs.length&&!tableQuestion?await answerPdf(prompt,pdfs,previous):await localAnswer(prompt,answer(prompt,documents));
+  }
   catch { turn.result = {text:'The workspace could not process this question. Try fewer sources or a more specific question.',refs:[],mode:'Unable to answer'}; }
   if (chat === state.chats[state.current]) {
     renderThread();
@@ -380,6 +445,7 @@ if (['127.0.0.1','localhost'].includes(location.hostname)) {
   fetch('/api/config',{signal:AbortSignal.timeout(3000)}).then(result=>result.ok ? result.json() : null).then(data=>{
     if (data?.model) {
       state.offlineModel=data.model;
+      syncModel();
       byId('privacy').replaceChildren(icon('shield-check'),document.createTextNode(' Local model available'));
       icons();
     }
