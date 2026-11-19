@@ -15,7 +15,7 @@
 <body>
 <div class="shell">
 <aside class="sidebar" id="sidebar">
- <div class="brand"><img src="logo.svg" alt=""><div><strong>Chat With Data</strong><small>FINANCIAL RESEARCH</small></div></div>
+ <div class="brand"><img src="logo.svg" alt=""><div><strong>Chat With Data</strong><small>RESEARCH WORKSPACE</small></div></div>
  <button id="new" class="new"><i data-lucide="plus"></i> New conversation</button>
  <div class="side-label">WORKSPACE</div>
  <nav aria-label="Workspace">
@@ -32,13 +32,14 @@
  <main id="main" tabindex="-1">
   <div id="chat" class="view chat">
    <div id="welcome" class="welcome">
-    <div class="research-label"><i data-lucide="files"></i> Report analysis</div>
-    <h1>Understand your<br>financial reports.</h1>
-    <p>Compare reporting periods, check key figures, and open the source behind each answer.</p>
+    <div class="research-label">Financial document analysis</div>
+    <h1>Ask your<br>financial reports.</h1>
+    <p>Compare reporting periods, investigate key figures, and trace each answer to its source.</p>
+    <div id="composer-home"></div>
     <div class="suggest-label">Suggested questions</div>
     <div class="suggest-grid">
      <button class="suggest" data-prompt="Summarize the key findings in this PDF"><i data-lucide="align-left"></i><span><strong>Summarize a PDF</strong><small>Pull out the key findings</small></span><i data-lucide="arrow-up-right"></i></button>
-     <button class="suggest" data-prompt="What factors does management give for the change in revenue?"><i data-lucide="columns-2"></i><span><strong>Explain performance</strong><small>Find what management says drove revenue</small></span><i data-lucide="arrow-up-right"></i></button>
+     <button class="suggest" data-prompt="What factors does management give for the change in revenue?"><i data-lucide="columns-2"></i><span><strong>Explain performance</strong><small>Find what drove changes in revenue</small></span><i data-lucide="arrow-up-right"></i></button>
      <button class="suggest" data-prompt="Compare revenue in 2024 and 2025"><i data-lucide="chart-no-axes-combined"></i><span><strong>Compare reporting years</strong><small>Check the figures behind the change</small></span><i data-lucide="arrow-up-right"></i></button>
      <button class="suggest" data-prompt="What conclusions does the PDF support and what limitations does it mention?"><i data-lucide="tag"></i><span><strong>Check the conclusions</strong><small>Look for evidence and limitations</small></span><i data-lucide="arrow-up-right"></i></button>
     </div>
@@ -48,13 +49,14 @@
   <div id="sources-view" class="view subview" hidden></div>
   <div id="business-view" class="view subview" hidden></div>
  </main>
+ <div id="composer-dock"></div>
  <div class="composer-wrap" id="composer-wrap">
   <form id="composer" class="composer"><label for="question" class="sr">Question about your files</label><textarea id="question" rows="2" maxlength="1500" placeholder="Ask a question about your files…"></textarea><div class="composer-tools"><button type="button" id="attach" class="attach"><i data-lucide="paperclip"></i> Attach files</button><div class="scope-row"><label for="scope">Search in</label><select id="scope"><option value="">All sources</option></select></div><button class="send" id="send" aria-label="Send question"><i data-lucide="arrow-up"></i></button></div></form>
   <div class="composer-foot"><i data-lucide="info"></i><span>Verify important answers against the cited sources.</span></div>
  </div>
 </section>
 <aside class="sources" id="sources-panel" aria-label="Sources">
- <div class="sources-head"><div><h2>Sources <span id="count">0</span></h2></div><i data-lucide="folder-open"></i></div>
+ <div class="sources-head"><h2>Sources</h2><span id="count" class="source-count" aria-label="Uploaded file count">0</span></div>
  <button class="drop" id="drop"><span class="upload-icon"><i data-lucide="upload-cloud"></i></span><strong>Add financial reports</strong><span>Drop files or <u>browse</u></span></button>
  <button class="folder" id="folder"><i data-lucide="folder-plus"></i> Upload a folder</button>
  <input type="file" id="files" multiple hidden><input type="file" id="folders" webkitdirectory multiple hidden>

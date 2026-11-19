@@ -185,6 +185,9 @@ byId('demo').onclick = () => upload([
 function renderThread() {
   const chat = state.chats[state.current];
   byId('welcome').hidden = chat.length > 0;
+  const composer = byId('composer-wrap');
+  const target = byId(chat.length ? 'composer-dock' : 'composer-home');
+  if (composer.parentElement !== target) target.append(composer);
   const turns = chat.map(turn => {
     const section = element('article','turn');
     const prompt = element('p','user-message',turn.prompt);
