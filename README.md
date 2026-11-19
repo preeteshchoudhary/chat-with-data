@@ -1,6 +1,6 @@
 # Chat With Data
 
-**A source-cited workspace for financial reports and transaction analysis.**
+**Analyze financial reports and spreadsheets with source-cited answers, year-over-year comparisons, and profit and margin calculations.**
 
 Upload annual reports, income statements, balance sheets, cash-flow statements, or spreadsheets. Ask a question in plain language, check the calculation, and open the PDF page or spreadsheet row behind the answer.
 
